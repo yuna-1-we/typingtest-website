@@ -1,0 +1,208 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Typing Speed Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #ffe6f0;
+      margin: 0;
+      padding: 30px;
+    }
+
+    #credits, #instructions, #testArea, #results {
+      display: none;
+    }
+
+    #credits {
+      display: block;
+      background-color: #fff0f5;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+
+    #quote {
+      font-size: 1.2em;
+      padding: 20px;
+      background: #ffffff;
+      border: 1px solid #ccc;
+      margin-bottom: 20px;
+    }
+
+    textarea {
+      width: 80%;
+      height: 100px;
+      font-size: 1.1em;
+      padding: 10px;
+    }
+
+    button {
+      padding: 10px 25px;
+      font-size: 1em;
+      margin-top: 20px;
+      background-color: #ff80aa;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    #results {
+      margin-top: 30px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="credits">
+    <h2>Typing Speed Test</h2>
+    <p>Created by <strong>Form 1 Girls Group</strong></p>
+    <p>With help from AI (ChatGPT)</p>
+    <button onclick="showInstructions()">Click here to continue</button>
+  </div>
+
+  <div id="instructions">
+    <h3>Instructions</h3>
+    <p>✅ You will type 3 different sentences.</p>
+    <p>✅ You have 30 seconds for each sentence.</p>
+    <p>✅ Press <strong>Enter</strong> after each sentence.</p>
+    <p>✅ At the end, you will see your results.</p>
+    <button onclick="startTest()">Start Test</button>
+  </div>
+
+  <div id="testArea">
+    <div id="quote">Quote will appear here</div>
+    <textarea id="input" placeholder="Start typing here..." disabled></textarea>
+    <br>
+    <div id="timer">Time left: 30s</div>
+  </div>
+
+  <div id="results"></div>
+
+  <script>
+    const allQuotes = [
+      "Typing is a valuable skill in the digital world.",
+      "Practice helps you type faster and more accurately.",
+      "Form one girls are coding with confidence and creativity.",
+      "Digital literacy opens doors to future opportunities.",
+      "Accuracy is more important than speed at first."
+    ];
+
+    let selectedQuotes = [];
+    let currentIndex = 0;
+    let totalTypedWords = 0;
+    let totalMistakes = 0;
+    let totalCorrectChars = 0;
+    let totalExpectedChars = 0;
+    let startTime;
+    let timer;
+    let timeLeft = 30;
+
+    function showInstructions() {
+      document.getElementById("credits").style.display = "none";
+      document.getElementById("instructions").style.display = "block";
+    }
+
+    function startTest() {
+      selectedQuotes = getRandomQuotes(3);
+      currentIndex = 0;
+      totalTypedWords = 0;
+      totalMistakes = 0;
+      totalCorrectChars = 0;
+      totalExpectedChars = 0;
+      document.getElementById("instructions").style.display = "none";
+      document.getElementById("results").innerHTML = "";
+      document.getElementById("testArea").style.display = "block";
+      showQuote();
+
+      document.getElementById("input").onkeydown = function (event) {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          clearInterval(timer);
+          processInput();
+        }
+      };
+    }
+
+    function getRandomQuotes(n) {
+      const shuffled = [...allQuotes].sort(() => 0.5 - Math.random());
+      return shuffled.slice(0, n);
+    }
+
+    function showQuote() {
+      if (currentIndex < selectedQuotes.length) {
+        document.getElementById("quote").textContent = selectedQuotes[currentIndex];
+        document.getElementById("input").value = "";
+        document.getElementById("input").disabled = false;
+        document.getElementById("input").focus();
+        startTime = new Date().getTime();
+        timeLeft = 30;
+        updateTimer();
+        timer = setInterval(updateTimer, 1000);
+      }
+    }
+
+    function updateTimer() {
+      timeLeft--;
+      document.getElementById("timer").textContent = `Time left: ${timeLeft}s`;
+      if (timeLeft <= 0) {
+        clearInterval(timer);
+        processInput();
+      }
+    }
+
+    function processInput() {
+      const typedText = document.getElementById("input").value.trim();
+      const originalText = selectedQuotes[currentIndex];
+
+      const expectedWords = originalText.trim().split(/\s+/);
+      const typedWords = typedText.trim().split(/\s+/);
+      totalTypedWords += typedWords.length;
+
+      for (let i = 0; i < expectedWords.length; i++) {
+        if (typedWords[i] !== expectedWords[i]) {
+          totalMistakes++;
+        }
+      }
+
+      const minLength = Math.min(originalText.length, typedText.length);
+      for (let i = 0; i < minLength; i++) {
+        if (typedText[i] === originalText[i]) {
+          totalCorrectChars++;
+        }
+      }
+
+      totalExpectedChars += originalText.length;
+
+      currentIndex++;
+      if (currentIndex < selectedQuotes.length) {
+        showQuote();
+      } else {
+        finishTest();
+      }
+    }
+
+    function finishTest() {
+      document.getElementById("input").disabled = true;
+      document.getElementById("testArea").style.display = "none";
+
+      const totalTime = 90; // 30s * 3
+      const wpm = Math.round((totalTypedWords / totalTime) * 60);
+      const accuracy = Math.round((totalCorrectChars / totalExpectedChars) * 100);
+
+      document.getElementById("results").style.display = "block";
+      document.getElementById("results").innerHTML =
+        `<h3> Test Complete!</h3>
+         <p><strong>Total Time:</strong> 90 seconds</p>
+         <p><strong>Words per Minute (WPM):</strong> ${wpm}</p>
+         <p><strong>Accuracy:</strong> ${accuracy}%</p>
+         <p><strong>Miswritten Words:</strong> ${totalMistakes}</p>`;
+    }
+  </script>
+
+</body>
+</html>
